@@ -1,5 +1,7 @@
 <LANGUAGE>
-  <CATEGORY Name="SampleMap">
-	<Entry Name="SampleMessage">If you can read this, it means that the sample add on took over this line</Entry>
+  <CATEGORY Name="TrueDarkness">
+    <Entry Name="NightVisionDisabled">Night vision has been disabled by TrueDarkness mod.</Entry>
+    <Entry Name="PitchBlackWarning">Without light, the area around you will be pitch black. Tread carefully.</Entry>
+    <!-- You can add more entries as needed -->
   </CATEGORY>  
 </LANGUAGE>
