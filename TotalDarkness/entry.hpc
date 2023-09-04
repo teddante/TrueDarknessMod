@@ -2,13 +2,12 @@
 <Content 
 	Author="TedEnston" 
 	Dependencies="" 
-	Description_english="TrueDarkness" 
+	Description_english="TrueDarkness - A mod for Amnesia: The Bunker that enforces a realistic darkness experience." 
 	Description_spanish="" 
 	LauncherPic="LauncherPic.png" 
 	Title="TrueDarkness" 
 	Type="AddOn" 
-	UID="" 
+	UID="TDM2023UID001" 
 	Version="1.0"
-	
-	LanguageFolder = "config/lang/"
+	LanguageFolder="config/lang/"
 />
