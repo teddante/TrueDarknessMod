@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Content 
+	Author="TedEnston" 
+	Dependencies="" 
+	Description_english="TrueDarkness" 
+	Description_spanish="" 
+	LauncherPic="LauncherPic.png" 
+	Title="TrueDarkness" 
+	Type="AddOn" 
+	UID="" 
+	Version="1.0"
+	
+	LanguageFolder = "config/lang/"
+/>
