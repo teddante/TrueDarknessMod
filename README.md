@@ -1,6 +1,6 @@
 # TrueDarknessMod for Amnesia: The Bunker
 
-Welcome to the TrueDarknessMod for Amnesia: The Bunker! Dive into an experience where darkness truly means dark, offering an feeling of suspense and immersion.
+Welcome to the TrueDarknessMod for Amnesia: The Bunker! Dive into an experience where darkness truly means dark, offering a feeling of suspense and immersion.
 
 ## Description
 
@@ -14,7 +14,7 @@ The primary goal of the TrueDarknessMod is to ensure that when players are away 
 
 ## Installation
 
-1. [Download](#) the latest release of the TrueDarknessMod.
+1. Download the latest release of the TrueDarknessMod.
 2. Extract the contents into your Amnesia: The Bunker game mod directory.
 3. Launch the game and dive into the true darkness.
 
@@ -26,7 +26,7 @@ Feel free to raise issues or propose enhancements. If you'd like to contribute d
 
 ## License
 
-This mod is open-source and is licensed under the [MIT License](LICENSE).
+This mod is open-source and is licensed under the MIT License.
 
 ## Acknowledgements
 
