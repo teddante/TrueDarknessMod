@@ -2443,7 +2443,7 @@ class cScrPlayerCustom : cScrPlayer
 	
 	///////////////////
 	// Settings
-	bool mbNightVision_Enabled = false;		
+	bool mbNightVision_Enabled = true;		
 	bool mbNightVision_Active = false;
 	bool mbNightVision_Force = false;
 	float mfNightVision_Count = 0.0f;
@@ -2467,7 +2467,7 @@ class cScrPlayerCustom : cScrPlayer
 	
 	void ResetNightVision()
 	{
-		mbNightVision_Enabled = false;
+		mbNightVision_Enabled = true;
 		mbNightVision_Active = false;
 		mbNightVision_Force = false;
 		mfNightVision_Mul = 0.0f;
@@ -2489,14 +2489,135 @@ class cScrPlayerCustom : cScrPlayer
 	
 	void UpdateNightVision(float afTimeStep)
 	{
-		// Entirely skip the update logic, ensuring night vision stays off
+		if (mlNightVision_ActivationFrame < 2) ++mlNightVision_ActivationFrame;
+		
+		///////////////////
+		// Setup vars
+		cCamera@ pCam = mBaseObj.GetCamera();
+		iCharacterBody@ pBody = mBaseObj.GetCharacterBody();
+		int lState = mBaseObj.GetCurrentStateId();
+		
+		///////////////////
+		// Should activate?
+		bool bInShadow = mfNightVision_LightLevel < mfMapDeepShadow || 
+						 lState == ePlayerState_Custom_CheckHealth || 
+						 lState == ePlayerState_Custom_UsingGun_Reload;
+		
+		mfNightVision_LightLevelCheckCount -= afTimeStep;
+		if (mfNightVision_LightLevelCheckCount <= 0.f)
+		{
+			mfNightVision_LightLevelCheckCount = cMath_RandRectf(0.25f, 0.30f);
+			
+			mfNightVision_LightLevel = GetLightLevel(true);
+			bInShadow = mfNightVision_LightLevel < mfMapDeepShadow;
+			
+			if (bInShadow == false)
+			{
+				// Do another check slightly in front of the player
+				float fDist = 0.f;
+				float fMaxDist = 1.25f;
+				cVector3f vNrm = 0.f;
+				cLux_GetClosestBody(pCam.GetPosition(), pBody.GetForward(), fMaxDist, fDist, vNrm);
+							
+				cVector3f vPos = pCam.GetPosition() + pBody.GetForward() * cMath_Min(fMaxDist, fDist);
+				mfNightVision_LightLevel = cMath_Min(mfNightVision_LightLevel, GetLightLevelAtPosWithoutIgnoredLights(vPos, 0.25f));
+				bInShadow = mfNightVision_LightLevel < mfMapDeepShadow;
+			}
+		}
+								
+		bool bShouldActivate = bInShadow || mbNightVision_Force;
+
+		///////////////////
+		// Activate
+		if (mbNightVision_Active == false)
+		{
+			if (bShouldActivate) 
+			{
+				mfNightVision_Count += afTimeStep;
+
+				float fActivationTime = gfNightVisionActivationTime;
+				if (mbWaterHiding_Submerged)
+					fActivationTime *= 0.15f;
+					
+				if (mfNightVision_Count >= fActivationTime || mlNightVision_ActivationFrame == 1)
+				{
+					mbNightVision_Active = true;
+					mfNightVision_Count = 0.0f;
+					if (mlNightVision_ActivationFrame == 1) mfNightVision_Mul = 1;
+				}
+			}
+			else
+			{
+				mfNightVision_Count = 0.0f;
+			}
+		}
+		
+		///////////////////
+		// Deactivate
+		else
+		{
+			if (bInShadow == false && mbNightVision_Force == false)
+			{
+				mfNightVision_Count += mbLanternOn ? 4.0f * afTimeStep : afTimeStep;
+				if (mfNightVision_Count >= gfNightVisionDeactivationTime)
+				{
+					mbNightVision_Active = false;
+					mfNightVision_Count = 0.0f;
+				}
+			}
+			else
+			{
+				mfNightVision_Count = 0.0f;
+			}
+		}
+
+		///////////////////
+		// Check for input on key '4'
+		if (cInput_IsTriggered(eAction_Item4))
+		{
+			// If mbNightVision_Enabled is true, it will become false and vice versa
+			mbNightVision_Enabled = !mbNightVision_Enabled;
+
+			// Toggle the function based on the new value of mbNightVision_Enabled
+			SetNightVisionEnabled(mbNightVision_Enabled);
+
+			cLux_AddDebugMessage("Enable NV");
+		}
+
+		///////////////////
+		// Fade mul
+		float fMulGoal = 0.f;
+		float fMulSpeed = 1.f / 2.5f;
+		
+		if (mbNightVision_Enabled && mbNightVision_Active)
+		{
+			fMulGoal = 1.f;
+			fMulSpeed = 1.f / 2.f;
+		}
+		
+		if (mbWaterHiding_Submerged)
+			fMulSpeed *= 2.5f;
+		
+		mfNightVision_Mul = cMath_IncreaseTo(mfNightVision_Mul, fMulSpeed * afTimeStep, fMulGoal);
+		
+		///////////////////
+		// Fade strength
+		mfNightVision_Strength = cMath_IncreaseTo(mfNightVision_Strength, afTimeStep * mfNightVision_StrengthFadeSpeed, mfNightVision_StrengthGoal);
+		
+		///////////////////
+		// Apply values
+		Map_SetNightVision(gNightVisionColor,
+						   mfNightVision_Brightness * mfNightVision_Mul * mfNightVision_Strength,
+						   mfNightVision_RadiusMin * mfNightVision_Mul * mfNightVision_Strength,
+						   mfNightVision_RadiusMax * mfNightVision_Mul * mfNightVision_Strength,
+						   mfNightVision_Falloff);
 	}
 	
 	//------------------------------------------------------------
 	
 	void _Global_SetNightVisionEnabled()
 	{
-    	// Override any external request to enable night vision
+		mbNightVision_Enabled = cScript_GetGlobalArgBool(0);
 	}
 	
 	//------------------------------------------------------------
@@ -2521,7 +2642,7 @@ class cScrPlayerCustom : cScrPlayer
 	
 	void _Global_SetForceNightVision()
 	{
-    	// Override any external request to force night vision
+		mbNightVision_Force = cScript_GetGlobalArgBool(0);
 	}
 	
 	//------------------------------------------------------------
